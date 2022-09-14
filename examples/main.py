@@ -16,7 +16,7 @@ from utils.losses import LabelSmoothingCrossEntropy
 
 model_names = sorted(name for name in models.__dict__
                      if name.islower() and not name.startswith("_")
-                     and callable(models.__dict__[name]))
+                     and callable(models.__dict__[name]))   # 检测module下的属性是否是函数——函数可以被调用
 
 best_acc1 = 0
 
@@ -126,9 +126,9 @@ def main():
     criterion = LabelSmoothingCrossEntropy()
 
     if (not args.no_cuda) and torch.cuda.is_available():
-        torch.cuda.set_device(args.gpu_id)
-        model.cuda(args.gpu_id)
-        criterion = criterion.cuda(args.gpu_id)
+        torch.cuda.set_device(args.gpu_id)      # 设定训练使用的GPU
+        model.cuda(args.gpu_id)                 # 把model放在指定的GPU上
+        criterion = criterion.cuda(args.gpu_id) # 把损失函数放在指定的GPU上
 
     optimizer = torch.optim.AdamW(model.parameters(), lr=args.lr,
                                   weight_decay=args.weight_decay)

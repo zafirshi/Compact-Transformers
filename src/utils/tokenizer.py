@@ -34,14 +34,14 @@ class Tokenizer(nn.Module):
                 for i in range(n_conv_layers)
             ])
 
-        self.flattener = nn.Flatten(2, 3)
+        self.flattener = nn.Flatten(2, 3) # 将输入图像的HW展开成一个vector 
         self.apply(self.init_weight)
 
     def sequence_length(self, n_channels=3, height=224, width=224):
         return self.forward(torch.zeros((1, n_channels, height, width))).shape[1]
 
     def forward(self, x):
-        return self.flattener(self.conv_layers(x)).transpose(-2, -1)
+        return self.flattener(self.conv_layers(x)).transpose(-2, -1)   # x:(B,C,H,W)->(B,HW/P2,C*P*P)
 
     @staticmethod
     def init_weight(m):

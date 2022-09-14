@@ -20,25 +20,25 @@ class ViTLite(nn.Module):
                  n_input_channels=3,
                  kernel_size=16,
                  dropout=0.,
-                 attention_dropout=0.1,
-                 stochastic_depth=0.1,
+                 attention_dropout=0.1, # 计算attention时，q@k矩阵运算之后的dropout
+                 stochastic_depth=0.1,  # 计算attention@v矩阵运算之后的dropout
                  num_layers=14,
                  num_heads=6,
-                 mlp_ratio=4.0,
+                 mlp_ratio=4.0,         # TransformerEncoderLayer后端MLP倍率：1->4->1
                  num_classes=1000,
                  positional_embedding='learnable',
-                 *args, **kwargs):
+                 *args, **kwargs):      # general plugin design
         super(ViTLite, self).__init__()
         assert img_size % kernel_size == 0, f"Image size ({img_size}) has to be" \
                                             f"divisible by patch size ({kernel_size})"
         self.tokenizer = Tokenizer(n_input_channels=n_input_channels,
                                    n_output_channels=embedding_dim,
                                    kernel_size=kernel_size,
-                                   stride=kernel_size,
+                                   stride=kernel_size,  # stride in kernel_size
                                    padding=0,
                                    max_pool=False,
-                                   activation=None,
-                                   n_conv_layers=1,
+                                   activation=None,     # 当前配置：取消max pooling和activation之后的卷积->直接分块
+                                   n_conv_layers=1,     # 经过多少层卷积后flatten成token,依上配置:直接在输入图像分块（也可以经过多个Conv之后在特征图上分块）
                                    conv_bias=True)
 
         self.classifier = TransformerClassifier(
@@ -58,7 +58,7 @@ class ViTLite(nn.Module):
         )
 
     def forward(self, x):
-        x = self.tokenizer(x)
+        x = self.tokenizer(x)           # input-size:(B,HW/P2,C*P*P)->(B,192,768)
         return self.classifier(x)
 
 

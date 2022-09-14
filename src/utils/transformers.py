@@ -76,7 +76,7 @@ class TransformerEncoderLayer(Module):
     """
 
     def __init__(self, d_model, nhead, dim_feedforward=2048, dropout=0.1,
-                 attention_dropout=0.1, drop_path_rate=0.1):
+                 attention_dropout=0.1, drop_path_rate=0.1):        # attention_dropout??
         super(TransformerEncoderLayer, self).__init__()
         self.pre_norm = LayerNorm(d_model)
         self.self_attn = Attention(dim=d_model, num_heads=nhead,
@@ -136,7 +136,7 @@ class TransformerClassifier(Module):
                  embedding_dim=768,
                  num_layers=12,
                  num_heads=12,
-                 mlp_ratio=4.0,
+                 mlp_ratio=4.0,  # mlp拓展倍率：在TransformerEncoderLayer后端，token维度一般会1->4*->1的过程
                  num_classes=1000,
                  dropout=0.1,
                  attention_dropout=0.1,
@@ -185,7 +185,7 @@ class TransformerClassifier(Module):
         self.norm = LayerNorm(embedding_dim)
 
         self.fc = Linear(embedding_dim, num_classes)
-        self.apply(self.init_weight)
+        self.apply(self.init_weight)        # 自定义层参数初始化方式
 
     def forward(self, x):
         if self.positional_emb is None and x.size(1) < self.sequence_length:
@@ -205,9 +205,9 @@ class TransformerClassifier(Module):
         x = self.norm(x)
 
         if self.seq_pool:
-            x = torch.matmul(F.softmax(self.attention_pool(x), dim=1).transpose(-1, -2), x).squeeze(-2)
+            x = torch.matmul(F.softmax(self.attention_pool(x), dim=1).transpose(-1, -2), x).squeeze(-2) # return size:(B,channel:768=3*16*16) 
         else:
-            x = x[:, 0]
+            x = x[:, 0, :]  # 直接取encoder输出序列中的cls：size(B,channel)
 
         x = self.fc(x)
         return x
